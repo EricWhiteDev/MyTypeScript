@@ -1,14 +1,5 @@
 import { evaluate, BinaryOperation, BinaryOperators } from "../src";
 
-describe("Array tests", () =>
-{
-    test("array init", () =>
-    {
-        const a1 = [1, 2, 3];
-        expect(a1.length).toBe(3);
-    })
-})
-
 describe("Simple expression tests", () => {
     test("Check literal value", () => {
         expect(evaluate({ type: "literal", value: 5 })).toBeCloseTo(5);
