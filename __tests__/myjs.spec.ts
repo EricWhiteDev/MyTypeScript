@@ -7,7 +7,7 @@ describe("Array tests", () =>
         expect(a1.length).toBe(3);
     })
 
-    test("array compare", () =>
+    test("array compare array equality", () =>
     {
         const a = [];
         a.push({ first: 'Eric', last: 'White' });
@@ -19,6 +19,28 @@ describe("Array tests", () =>
                 { first: 'Asher', last: 'White' }
             ]
         )
+    })
+})
+
+describe("types", () =>
+{
+    // In the following example, the type declaration says that age is a number.
+    // But any lets you assign a string to it. The type checker will believe
+    // that it’s a number (that’s what you said, after all), and the chaos will
+    // go uncaught.
+    test("as any", () =>
+    {
+        let age: number;
+        age = '12' as any;
+        expect(age).toBe('12');
+
+        age += 1;
+        expect(age).toBe('121');
+    })
+
+    test("extends", () =>
+    {
+        // continue here...
     })
 })
 
@@ -53,15 +75,39 @@ describe("structural typing", () =>
 
         const v: NamedVector = { x: 3, y: 4, name: 'Zee' };
 
-        // What is interesting is that you never declared the relationship between Vector2D and NamedVector.
-        // And you did not have to write an alternative implementation of calculateLength for NamedVectors.
-        // TypeScript’s type system is modeling JavaScript’s runtime behavior (Item 1). It allowed calculateLength
-        // to be called with a NamedVector because its structure was compatible with Vector2D. This is where the 
+        // What is interesting is that you never declared the relationship
+        // between Vector2D and NamedVector. And you did not have to write an
+        // alternative implementation of calculateLength for NamedVectors.
+        // TypeScript’s type system is modeling JavaScript’s runtime behavior
+        // (Item 1). It allowed calculateLength to be called with a NamedVector
+        // because its structure was compatible with Vector2D. This is where the
         // term “structural typing” comes from.
 
         const l = calculateLength(v);  // OK, result is 5
 
         expect(l).toBe(5);
+    })
+
+    // The general rule is that the values in an intersection type contain the
+    // union of properties in each of its constituents.
+    test("union of types / intersection of types", () =>
+    {
+        interface Person {
+            name: string;
+        }
+        interface Lifespan {
+            birth: Date;
+            death?: Date;
+        }
+        type PersonSpan = Person & Lifespan;
+
+        const ps: PersonSpan = {
+            name: 'Alan Turing',
+            birth: new Date('1912/06/23'),
+            death: new Date('1954/06/07'),
+        };  // OK
+
+        expect(ps.name).toBe('Alan Turing');
     })
 })
 
@@ -90,11 +136,14 @@ describe("interface", () =>
 
 describe("function", () =>
 {
-    // TypeScript does provide a facility for overloading functions, but it operates entirely at the type level. You can provide multiple declarations for a function, but only a single implementation:
+    // TypeScript does provide a facility for overloading functions, but it
+    // operates entirely at the type level. You can provide multiple
+    // declarations for a function, but only a single implementation:
     test("function overload", () =>
     {
-        // these first two only provide type information.  When TypeScript produces JavaScript output, they are
-        // removed, and only the implementation remains.
+        // these first two only provide type information.  When TypeScript
+        // produces JavaScript output, they are removed, and only the
+        // implementation remains.
         function add(a: number, b: number): number;
         function add(a: string, b: string): string;
         
@@ -110,9 +159,12 @@ describe("function", () =>
 })
 
 // test if instance of class
-// This works because class Rectangle introduces both a type and a value, whereas interface only introduced a type.
-// The Rectangle in type Shape = Square | Rectangle refers to the type, but the Rectangle in shape instanceof Rectangle
-// refers to the value. This distinction is important to understand but can be quite subtle.
+
+// This works because class Rectangle introduces both a type and a value,
+// whereas interface only introduced a type. The Rectangle in type Shape =
+// Square | Rectangle refers to the type, but the Rectangle in shape instanceof
+// Rectangle refers to the value. This distinction is important to understand
+// but can be quite subtle.
 describe("class", () =>
 {
     test("class", () =>
@@ -144,11 +196,122 @@ describe("class", () =>
     })
 })
 
+describe("keyof", () =>
+{
+    test("keyof1", () =>
+    {
+        type Staff = {
+            name: string;
+            salary: number;
+        }
+        type staffKeys = keyof Staff; // "name" | "salary"
+        let staffKeys = 'name';
+        expect(staffKeys).toBe('name');
+        staffKeys = 'salary';
+        expect(staffKeys).toBe('salary');
+    })
+
+    test("keyof2", () =>
+    {
+        type BooleanKeys = keyof boolean; // "valueOf"
+        let bk: BooleanKeys;
+        bk = 'valueOf';
+        expect(bk).toBe('valueOf');
+    })
+
+    test("keyof3", () =>
+    {
+        let bk: keyof boolean; // "valueOf"
+        bk = 'valueOf';
+        expect(bk).toBe('valueOf');
+        // As you can see, it’s less useful when applied to primitive types.
+    })
+
+    test("keyof4", () =>
+    {
+        const user = {
+            name: 'John',
+            age: 32
+        };
+
+        // output: Array ["name", "age"]
+        expect(Object.keys(user)).toEqual(
+            [ 'name', 'age' ]
+        )
+
+        let property: keyof typeof user; // Type is 'name' | 'age'
+        let a: string[] = [];
+        for (property in user)
+        {
+            a.push(`${property}: ${user[property]}`);
+        }
+        expect(a).toStrictEqual(
+            ["name: John", "age: 32"]
+        )
+    })
+
+    test("keyof5", () =>
+    {
+        interface Type1 {
+            a1: string;
+            a2: string;
+        }
+        interface Type2 {
+            a2: string;
+            a3: string;
+        }
+
+        let type1Prop: keyof Type1;
+        type1Prop = "a1"; // ok
+        expect(type1Prop).toBe("a1");
+        type1Prop = "a2"; // ok
+        expect(type1Prop).toBe("a2");
+        
+        let anded: Type1 & Type2;
+        let andedProp: keyof typeof anded;
+        andedProp = "a1";
+        expect(andedProp).toBe("a1");
+        andedProp = "a2";
+        expect(andedProp).toBe("a2");
+        andedProp = "a3";
+        expect(andedProp).toBe("a3");
+
+        let ored: Type1 | Type2;
+        let ordedProp: keyof typeof ored;
+        // ordedProp = "a1"; // not ok
+        // expect(ordedProp).toBe("a1");
+        ordedProp = "a2";
+        expect(ordedProp).toBe("a2");
+        // ordedProp = "a3"; // not ok
+        // expect(ordedProp).toBe("a3");
+    })
+
+    test("enumeration of properties", () =>
+    {
+        const obj = {
+            foo: 'foo',
+            bar: 10
+        }
+
+        //let property: keyof typeof obj; // Type is 'foo' | 'bar'
+        let property: 'foo' | 'bar';
+
+        let a = [];
+        for (property in obj) {
+            a.push(`${property}: ${obj[property]}`);
+        }
+        expect(a[0]).toBe('foo: foo');
+        expect(a[1]).toBe('bar: 10');
+        expect(a.length).toBe(2);
+    })
+})
+
 describe("object tests", () =>
 {
     // a property's name can be any string, including the empty string.
-    // the quotes around a property's name in an object literal are optional if the name would be a legal
-    // JavaScript name, and not a reserved word.
+
+    // the quotes around a property's name in an object literal are optional if
+    // the name would be a legal JavaScript name, and not a reserved word.
     test("object literal", () =>
     {
         var stooge = {
@@ -250,8 +413,10 @@ describe("object tests", () =>
     })
 
     // the following are two ways to iterate through properties.
-    // Both are suitable solutions but generally speaking keyof T is good for constants or in situations where
-    // you know the object won’t have additional keys and you want precise keys.
+
+    // Both are suitable solutions but generally speaking keyof T is good for
+    // constants or in situations where you know the object won’t have
+    // additional keys and you want precise keys.
     test("enumeration of properties", () =>
     {
         const obj = {
@@ -270,8 +435,12 @@ describe("object tests", () =>
         expect(a.length).toBe(2);
     })
 
-    // Object.entries() creates an array of tuples (key and value) that we can iterate over through a simple forEach() loop.
-    // note that the old javascript way of iterating through properties is now obsolete.
+    // Object.entries() creates an array of tuples (key and value) that we can
+    // iterate over through a simple forEach() loop.
+
+    // note that the old javascript way of iterating through properties is now
+    // obsolete.
+
     // iterate through properties.
     test("Object.entries enumeration of properties", () =>
     {
