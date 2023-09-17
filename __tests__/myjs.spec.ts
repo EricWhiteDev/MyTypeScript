@@ -6,7 +6,65 @@ describe("Array tests", () =>
         const a1 = [1, 2, 3];
         expect(a1.length).toBe(3);
     })
+
+    test("array compare", () =>
+    {
+        const a = [];
+        a.push({ first: 'Eric', last: 'White' });
+        a.push({ first: 'Asher', last: 'White' });
+
+        expect(a).toEqual(
+            [
+                { first: 'Eric', last: 'White' },
+                { first: 'Asher', last: 'White' }
+            ]
+        )
+    })
 })
+
+describe("structural typing", () =>
+{
+    // Understand that JavaScript is duck typed and TypeScript uses structural
+    // typing to model this: values assignable to your interfaces might have
+    // properties beyond those explicitly listed in your type declarations.
+    // Types are not “sealed.”
+
+    // Be aware that classes also follow structural typing rules. You may not
+    // have an instance of the class you expect!
+
+    // Use structural typing to facilitate unit testing.
+
+    test("structural type", () =>
+    {
+        interface Vector2D {
+            x: number;
+            y: number;
+        }
+
+        function calculateLength(v: Vector2D) {
+            return Math.sqrt(v.x * v.x + v.y * v.y);
+        }
+
+        interface NamedVector {
+            name: string;
+            x: number;
+            y: number;
+        }
+
+        const v: NamedVector = { x: 3, y: 4, name: 'Zee' };
+
+        // What is interesting is that you never declared the relationship between Vector2D and NamedVector.
+        // And you did not have to write an alternative implementation of calculateLength for NamedVectors.
+        // TypeScript’s type system is modeling JavaScript’s runtime behavior (Item 1). It allowed calculateLength
+        // to be called with a NamedVector because its structure was compatible with Vector2D. This is where the 
+        // term “structural typing” comes from.
+
+        const l = calculateLength(v);  // OK, result is 5
+
+        expect(l).toBe(5);
+    })
+})
+
 
 describe("interface", () =>
 {
@@ -21,9 +79,68 @@ describe("interface", () =>
             {name: 'Alaska',  capital: 'Juneau'},
             {name: 'Arizona', capital: 'Phoenix'},
         ];
-        for (const state of states) {
-            console.log(state.capital);
+
+        // for (const state of states) {
+        //     console.log(state.capital);
+        // }
+
+        expect(states[0].name).toBe('Alabama');
+    })
+})
+
+describe("function", () =>
+{
+    // TypeScript does provide a facility for overloading functions, but it operates entirely at the type level. You can provide multiple declarations for a function, but only a single implementation:
+    test("function overload", () =>
+    {
+        // these first two only provide type information.  When TypeScript produces JavaScript output, they are
+        // removed, and only the implementation remains.
+        function add(a: number, b: number): number;
+        function add(a: string, b: string): string;
+        
+        function add(a: any, b: any) {
+          return a + b;
         }
+        
+        const three = add(1, 2);  // Type is number
+        expect(three).toBe(3);
+        const twelve = add('1', '2');  // Type is string
+        expect(twelve).toBe('12');
+    })
+})
+
+// test if instance of class
+// This works because class Rectangle introduces both a type and a value, whereas interface only introduced a type.
+// The Rectangle in type Shape = Square | Rectangle refers to the type, but the Rectangle in shape instanceof Rectangle
+// refers to the value. This distinction is important to understand but can be quite subtle.
+describe("class", () =>
+{
+    test("class", () =>
+    {
+        class Square {
+            constructor(public width: number) { }
+        }
+        class Rectangle extends Square {
+            constructor(public width: number, public height: number) {
+                super(width);
+            }
+        }
+        type Shape = Square | Rectangle;
+
+        function calculateArea(shape: Shape) {
+            if (shape instanceof Rectangle) {
+                shape;  // Type is Rectangle
+                return shape.width * shape.height;
+            } else {
+                shape;  // Type is Square
+                return shape.width * shape.width;  // OK
+            }
+        }
+
+        const r: Rectangle = new Rectangle(3, 6);
+
+        const a = calculateArea(r);
+        expect(a).toBe(18);
     })
 })
 
@@ -170,6 +287,35 @@ describe("object tests", () =>
         expect(a[0]).toBe('foo: foo');
         expect(a[1]).toBe('bar: 10');
         expect(a.length).toBe(2);
+    })
+
+    // test whether an object has a property
+    // if ('height' in shape)
+    test("does object have property", () =>
+    {
+        interface Square {
+            width: number;
+        }
+        interface Rectangle extends Square {
+            height: number;
+        }
+        type Shape = Square | Rectangle;
+
+        function calculateArea(shape: Shape) {
+            if ('height' in shape) {
+                return shape.width * shape.height;
+            } else {
+                return shape.width * shape.width;
+            }
+        }
+        
+        const r: Rectangle = {
+            width: 4,
+            height: 8,
+        }
+
+        const a = calculateArea(r);
+        expect(a).toBe(32);
     })
 })
 
