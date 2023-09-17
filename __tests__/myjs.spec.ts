@@ -8,6 +8,25 @@ describe("Array tests", () =>
     })
 })
 
+describe("interface", () =>
+{
+    test("interface", () =>
+    {
+        interface State {
+            name: string;
+            capital: string;
+        }
+        const states: State[] = [
+            {name: 'Alabama', capital: 'Montgomery'},
+            {name: 'Alaska',  capital: 'Juneau'},
+            {name: 'Arizona', capital: 'Phoenix'},
+        ];
+        for (const state of states) {
+            console.log(state.capital);
+        }
+    })
+})
+
 describe("object tests", () =>
 {
     // a property's name can be any string, including the empty string.
@@ -86,29 +105,6 @@ describe("object tests", () =>
         expect(b == c).toBe(true);
     })
 
-    // Every object is linked to a prototype object from which it can inherit properties.
-    // All objects created from object literals are linked to Object.prototype, an object that comes standard with JavaScript.
-    // When you make a new object, you can select the object that should be its prototype.
-    // TODO this doesn't compile
-    // test("Object.create", () =>
-    // {
-    //     var stooge = {
-    //         "first-name": "Jerome",
-    //         "last-name": "Howard"
-    //     };
-
-    //     if (typeof Object.create !== 'function') {
-    //         Object.create = function (o): any
-    //         {
-    //             var F = function () {};
-    //             F.prototype = o;
-    //             return new F();
-    //         };
-    //     }
-
-    //     var anotherStooge = Object.create(stooge);
-    // })
-
     test("typeof hasOwnProperty", () =>
     {
         var flight = {
@@ -136,6 +132,9 @@ describe("object tests", () =>
         expect(flight.hasOwnProperty('constructor')).toBe(false);
     })
 
+    // the following are two ways to iterate through properties.
+    // Both are suitable solutions but generally speaking keyof T is good for constants or in situations where
+    // you know the object won’t have additional keys and you want precise keys.
     test("enumeration of properties", () =>
     {
         const obj = {
@@ -155,6 +154,8 @@ describe("object tests", () =>
     })
 
     // Object.entries() creates an array of tuples (key and value) that we can iterate over through a simple forEach() loop.
+    // note that the old javascript way of iterating through properties is now obsolete.
+    // iterate through properties.
     test("Object.entries enumeration of properties", () =>
     {
         const obj = {
