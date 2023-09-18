@@ -1,5 +1,8 @@
+// Good tutorial
 
-describe("Array tests", () =>
+// https://www.tutorialsteacher.com/typescript
+
+describe("array", () =>
 {
     test("array init", () =>
     {
@@ -22,6 +25,64 @@ describe("Array tests", () =>
     })
 })
 
+describe("tuple", () =>
+{
+    test("tuple", () =>
+    {
+        var employee: [number, string] = [1, "Steve"];
+
+        expect(employee[0]).toBe(1);
+        expect(employee[1]).toBe("Steve");
+
+        // TypeScript generates an array in JavaScript for the tuple variable.
+        // For example, var employee: [number, string] = [1, 'Steve'] will be
+        // compiled as var employee = [1, "Steve"] in JavaScript.
+
+        // We can access tuple elements using index, the same way as an array.
+        // An index starts from zero.
+    })
+
+    test("push onto tuple", () =>
+    {
+        var employee: [number, string] = [1, "Steve"];
+        employee.push(2, "Bill");
+        expect(employee.toString()).toBe("1,Steve,2,Bill");
+    })
+
+    test("tuple2", () =>
+    {
+        var user: [number, string, boolean, number, string];// declare tuple variable
+        user = [1, "Steve", true, 20, "Admin"];// initialize tuple variable
+
+        expect(user[0]).toBe(1);
+        expect(user[1]).toBe("Steve");
+        expect(user[2]).toBe(true);
+        expect(user[3]).toBe(20);
+        expect(user[4]).toBe("Admin");
+    })
+
+    test("array of tuple", () =>
+    {
+        var employee: [number, string][];
+        employee = [[1, "Steve"], [2, "Bill"], [3, "Jeff"]];
+
+        expect(employee[0][0]).toBe(1);
+        expect(employee[0][1]).toBe("Steve");
+        expect(employee[1][0]).toBe(2);
+        expect(employee[1][1]).toBe("Bill");
+        expect(employee[2][0]).toBe(3);
+        expect(employee[2][1]).toBe("Jeff");
+    })
+})
+
+// Every value has a type, but types do not have values. Constructs such as type
+// and interface exist only in the type space.
+
+// Some constructs such as class or enum introduce both a type and a value.
+
+// typeof, this, and many other operators and keywords have different meanings
+// in type space and value space.
+
 describe("types", () =>
 {
     // In the following example, the type declaration says that age is a number.
@@ -40,7 +101,118 @@ describe("types", () =>
 
     test("extends", () =>
     {
-        // continue here...
+        interface Vector1D { x: number; }
+        interface Vector2D extends Vector1D { y: number; }
+        interface Vector3D extends Vector2D { z: number; }
+
+        let v1D: Vector1D =
+        {
+            x: 42,
+        };
+        expect(v1D.x).toBe(42);
+
+        let v2D: Vector2D =
+        {
+            x: 42,
+            y: 10,
+        }
+        expect(v2D.x).toBe(42);
+        expect(v2D.y).toBe(10);
+
+        let v3D: Vector3D =
+        {
+            x: 142,
+            y: 12,
+            z: 11,
+        }
+        expect(v3D.x).toBe(142);
+        expect(v3D.y).toBe(12);
+        expect(v3D.z).toBe(11);
+    })
+
+    test("type space or value space", () =>
+    {
+        // this is in type space
+        interface Cylinder {
+            radius: number;
+            height: number;
+        }
+
+        // this is in value space
+        const Cylinder = (radius: number, height: number) => ({ radius, height });
+
+        // Generally the symbols after a type or interface are in type space
+        // while those introduced in a const or let declaration are values.
+
+        // Statements in TypeScript can alternate between type space and value
+        // space. The symbols after a type declaration (:) or an assertion (as)
+        // are in type space while everything after an = is in value space.
+    })
+
+    test("typeof in type and value space", () =>
+    {
+        // There are many operators and keywords that mean different things in a
+        // type or value context. typeof, for instance:
+
+        class Cylinder {
+            radius = 1;
+            height = 1;
+        }
+
+        let c: Cylinder = {
+            radius: 11,
+            height: 22,
+        }
+
+        type T1 = typeof c;  // t1 is Cylinder
+        let c2: T1 = {
+            radius: 111,
+            height: 222,
+        }
+
+        const v1 = typeof c; // v1 is "object"
+        expect(v1).toBe("object");
+
+        // In a value context, typeof is JavaScript’s runtime typeof operator.
+        // It returns a string containing the runtime type of the symbol. This
+        // is not the same as the TypeScript type!
+        
+        // JavaScript’s runtime type system is much simpler than TypeScript’s
+        // static type system. In contrast to the infinite variety of TypeScript
+        // types, JavaScript’s typeof operator has historically only had six
+        // possible return values: “string,” “number,” “boolean,” “undefined,”
+        // “object,” and “function.”
+    })
+
+    test("using another objects property as a type", () =>
+    {
+        class Cylinder {
+            radius = 1;
+            height = 1;
+        }
+
+        // but this is pretty weird
+        const r1: Cylinder['radius'] = 23; // type is number
+        expect(r1).toBe(23);
+    })
+
+    test("type declarations vs type assertions", () =>
+    {
+        interface Person { name: string };
+
+        // this is good
+        const alice: Person = { name: 'Alice' };  // Type is Person
+
+        // this is bad
+        const bob = { name: 'Bob' } as Person;  // Type is Person
+
+        // why:
+
+        // const alice2: Person = {};
+        // ~~~~~ Property 'name' is missing in type '{}'
+        //       but required in type 'Person'
+
+        const bob2 = {} as Person;  // No error (but we want the error)
     })
 })
 
@@ -284,6 +456,9 @@ describe("keyof", () =>
         expect(ordedProp).toBe("a2");
         // ordedProp = "a3"; // not ok
         // expect(ordedProp).toBe("a3");
+
+        // In value space & and | are bitwise AND and OR. In type space they are
+        // the intersection and union operators.
     })
 
     test("enumeration of properties", () =>
