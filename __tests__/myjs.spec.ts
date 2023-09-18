@@ -25,6 +25,51 @@ describe("array", () =>
     })
 })
 
+describe("enum", () =>
+{
+    // Enums are always assigned numeric values when they are stored. The first
+    // value always takes the numeric value of 0, while the other values in the
+    // enum are incremented by 1.
+    test("simple enum", () =>
+    {
+        enum PrintMedia {
+            Newspaper,
+            Newsletter,
+            Magazine,
+            Book
+        }
+
+        const pm: PrintMedia = PrintMedia.Newsletter;
+        expect(pm).toBe(1);
+    })
+
+    test("initialized enum", () =>
+    {
+        enum PrintMedia {
+            Newspaper = 100,
+            Newsletter = 200,
+            Magazine = 300,
+            Book = 400
+        }
+
+        const pm: PrintMedia = PrintMedia.Newsletter;
+        expect(pm).toBe(200);
+    })
+
+    test("string enum", () =>
+    {
+        enum PrintMedia {
+            Newspaper = "NEWSPAPER",
+            Newsletter = "NEWSLETTER",
+            Magazine = "MAGAZINE",
+            Book = "BOOK"
+        }
+
+        expect(PrintMedia.Newspaper).toBe("NEWSPAPER");
+        expect(PrintMedia['Magazine']).toBe("MAGAZINE");
+    })
+})
+
 describe("tuple", () =>
 {
     test("tuple", () =>
