@@ -2,6 +2,9 @@
 
 // https://www.tutorialsteacher.com/typescript
 
+// https://medium.com/@mtiller/debugging-with-typescript-jest-ts-jest-and-visual-studio-code-ef9ca8644132
+
+
 describe("array", () =>
 {
     test("array init", () =>
